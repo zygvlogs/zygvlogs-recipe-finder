@@ -1,0 +1,109 @@
+header {
+    text-align: center;
+    background-color: #f1f1f1;
+    padding: 20px;
+  }
+  
+  h1 {
+    margin: 0;
+    font-size: 36px;
+    color: #333;
+  }
+  
+  form {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  
+  label {
+    font-size: 24px;
+    margin-right: 10px;
+    color: #333;
+  }
+  
+  input[type=text] {
+    padding: 10px;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    width: 400px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: #5FB99A;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #4E957D;
+  }
+  
+  #results {
+    margin-top: 50px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .recipe {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+  }
+  
+  .recipe:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .recipe img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+  }
+  
+  .recipe h2 {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .recipe p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: #555;
+  }
+  
+  .recipe a {
+    display: block;
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: #5FB99A;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .recipe a:hover {
+    background-color: #4E957D;
+  }
+  
