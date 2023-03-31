@@ -1,5 +1,6 @@
 # zygvlogs-recipe-finder
-Opensource recipe finder website with edamam API
+Opensource recipe finder website with edamam API.
+Full Version: https://food.zygvlogs.site/
 
 Install:
 1. Download files
