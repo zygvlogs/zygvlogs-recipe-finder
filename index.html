@@ -1,25 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>ZygVlogs Recipe Finder</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header>
-    <h1>ZygVlogs Recipe Finder</h1>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>ZygVlogs Recipe Finder</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>ZygVlogs Recipe Finder</h1>
     <button id="source-code-btn" onclick="window.location.href='https://github.com/zygvlogs/zygvlogs-recipe-finder'">Source Code</button>
-    <form id="search-form">
-      <input type="text" id="search-input" placeholder="Search for a recipe...">
-      <button type="submit" id="search-btn">Search</button>
-    </form>    
-  </header>
-
-  <main>
-    <div id="results"></div>
-    <button id="load-more-btn" style="display: none;">Load More</button>
-  </main>
-
-  <script src="script.js"></script>
-</body>
+      <form id="search-form">
+        <input type="text" id="search-input" placeholder="Search for recipes...">
+        <button type="submit" id="search-btn">Search</button>
+        <button id="suggest-btn">Suggest Me</button>
+      </form>
+      <main>
+        <div id="results"></div>
+        <button id="load-more-btn" style="display: none;">Load More</button>
+      </main>  
+    <script src="script.js"></script>
+  </body>
 </html>
