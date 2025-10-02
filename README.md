@@ -12,4 +12,4 @@ PayPal: https://paypal.me/zygvlogs
 Binance ID: 307252194
 BNB (Binance Smart Blockchain): 0x1c65e365871620a01217a2fa404751e2e9644526
 DogeCoin: DPyWsMKkbtqdRPkry47PKegnUd8o8MRskH
-LTC: LbBAjAaSwsv17W68ET4W6Vs79UBksrNHRp
+LTC: LeQXGYznbBg8CifE6gexkBYMvfJScgJPzU
