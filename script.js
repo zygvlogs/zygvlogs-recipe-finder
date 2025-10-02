@@ -1,8 +1,10 @@
-// API credentials
-const APP_ID = 'YOUR_APP_ID';
-const APP_KEY = 'YOUR_APP_KEY';
+// Edamam V2 direct usage (client-side)
+// NOTE: Keys in client-side JS are visible to users.
+const APP_ID = 'APP_ID';
+const APP_KEY = 'APP_KEY';
+const API_BASE = 'https://api.edamam.com/api/recipes/v2';
 
-// DOM elements
+
 const searchForm = document.querySelector('#search-form');
 const searchInput = document.querySelector('#search-input');
 const searchBtn = document.querySelector('#search-btn');
@@ -10,51 +12,54 @@ const suggestBtn = document.querySelector('#suggest-btn');
 const resultsSection = document.querySelector('#results');
 const loadMoreBtn = document.querySelector('#load-more-btn');
 
-// API variables
-let searchQuery = '';
-let from = 0;
-let to = 9;
-let recipes = [];
 
-// Event listeners
+let searchQuery = '';
+const PAGE_SIZE = 10;
+let recipes = [];
+let hasMore = false;
+let nextPageUrl = null; 
+
+
 searchForm.addEventListener('submit', handleSearch);
-searchBtn.addEventListener('click', handleSearch);
 suggestBtn.addEventListener('click', suggestRecipe);
 loadMoreBtn.addEventListener('click', loadMore);
 
 function handleSearch(event) {
   event.preventDefault();
-  console.log('Search button clicked');
   searchQuery = searchInput.value.trim();
   if (searchQuery !== '') {
-    from = 0;
-    to = 9;
+    recipes = [];
+    hasMore = false;
+    nextPageUrl = null;
     resultsSection.innerHTML = '';
-    fetchRecipes(searchQuery, from, to);
+    const url = `${API_BASE}?type=public&q=${encodeURIComponent(searchQuery)}&app_id=${APP_ID}&app_key=${APP_KEY}&size=${PAGE_SIZE}`;
+    fetchRecipesV2(url, true);
   }
 }
 
 
 
-// Fetch recipes
-async function fetchRecipes(query, from, to, clearResults) {
-  const url = `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}&from=${from}&to=${to}`;
+async function fetchRecipesV2(url, clearResults = false) {
   try {
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    const hits = data.hits || [];
     if (clearResults) {
-      recipes = data.hits;
-      resultsSection.innerHTML = '';
+      recipes = hits;
     } else {
-      recipes = [...recipes, ...data.hits];
+      recipes = [...recipes, ...hits];
     }
+    nextPageUrl = data?._links?.next?.href || null;
+    hasMore = Boolean(nextPageUrl);
     displayRecipes(recipes);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    resultsSection.innerHTML = '<p>Something went wrong. Please try again.</p>';
+    loadMoreBtn.style.display = 'none';
   }
 }
 
-// Display recipes
 function displayRecipes(recipes) {
   if (recipes.length > 0) {
     resultsSection.innerHTML = '';
@@ -63,63 +68,76 @@ function displayRecipes(recipes) {
         <div class="recipe">
           <img src="${recipe.recipe.image}" alt="${recipe.recipe.label}">
           <h2>${recipe.recipe.label}</h2>
-          <p><strong>Calories:</strong> ${Math.round(recipe.recipe.calories)}</p>
-          <a href="${recipe.recipe.url}" target="_blank">Get recipe</a>
+          <div class="meta"><span class="badge">Calories: ${Math.round(recipe.recipe.calories)}</span></div>
+          <a href="${recipe.recipe.url}" target="_blank" rel="noopener noreferrer">Get recipe</a>
         </div>
       `;
       resultsSection.insertAdjacentHTML('beforeend', recipeCard);
     });
-    if (recipes.length >= 10) {
-      loadMoreBtn.style.display = 'block';
-    } else {
-      loadMoreBtn.style.display = 'block';
-    }
+    loadMoreBtn.style.display = hasMore ? 'block' : 'none';
   } else {
     resultsSection.innerHTML = '<p>No recipes found.</p>';
     loadMoreBtn.style.display = 'none';
   }
 }
 
-// Load more recipes
 function loadMore() {
-  from += 10;
-  to += 10;
-  fetchRecipes(searchQuery, from, to, false);
+  if (!nextPageUrl) {
+    loadMoreBtn.style.display = 'none';
+    return;
+  }
+  fetchRecipesV2(nextPageUrl, false);
 }
 
-// Suggest recipe
-async function suggestRecipe() {
+async function suggestRecipe(event) {
+  if (event) event.preventDefault();
   const randomQuery = getRandomQuery();
-  const url = `https://api.edamam.com/search?q=${randomQuery}&app_id=${APP_ID}&app_key=${APP_KEY}&from=0&to=2`;
+  const url = `${API_BASE}?type=public&q=${encodeURIComponent(randomQuery)}&app_id=${APP_ID}&app_key=${APP_KEY}&size=2&random=true`;
   try {
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    const suggestedRecipes = data.hits;
-    let recipeCards = '';
-    suggestedRecipes.forEach((recipe) => {
-      const suggestedRecipe = recipe.recipe;
-      const recipeCard = `
-        <div class="recipe">
-          <img src="${suggestedRecipe.image}" alt="${suggestedRecipe.label}">
-          <h2>${suggestedRecipe.label}</h2>
-          <p><strong>Calories:</strong> ${Math.round(suggestedRecipe.calories)}</p>
-          <a href="${suggestedRecipe.url}" target="_blank">Get recipe</a>
-        </div>
-      `;
-      recipeCards += recipeCard;
-    });
-    resultsSection.innerHTML = recipeCards;
-    loadMoreBtn.style.display = 'none';
+    const suggestedRecipes = data.hits || [];
+    recipes = suggestedRecipes;
+    hasMore = false;
+    nextPageUrl = null;
+    displayRecipes(recipes);
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    resultsSection.innerHTML = '<p>Could not load suggestions. Please try again.</p>';
+    loadMoreBtn.style.display = 'none';
   }
 }
 
-// Get random query
 function getRandomQuery() {
-  const queries = ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'tofu', 'tempeh', 'lentils', 'beans', 'quinoa', 'rice', 'pasta', 'potatoes', 'sweet potatoes', 'carrots', 'broccoli', 'cauliflower', 'spinach', 'kale', 'lettuce', 'cucumber', 'tomatoes', 'bell peppers', 'onions', 'garlic', 'ginger', 'lemon', 'lime', 'orange', 'grapefruit', 'apples', 'bananas', 'berries', 'avocado', 'olives', 'coconut', 'almonds', 'cashews', 'peanuts', 'walnuts', 'pistachios', 'hazelnuts', 'sunflower seeds', 'pumpkin seeds', 'chia seeds', 'flaxseeds', 'sesame seeds', 'poppy seeds', 'honey', 'maple syrup', 'agave nectar', 'coconut sugar', 'brown sugar', 'white sugar', 'molasses', 'balsamic vinegar', 'red wine vinegar', 'apple cider vinegar', 'soy sauce', 'tamari', 'hoisin sauce', 'fish sauce', 'mayonnaise', 'mustard', 'ketchup', 'hot sauce', 'salsa', 'hummus', 'yogurt', 'sour cream', 'cream cheese', 'cheddar cheese', 'parmesan cheese', 'feta cheese', 'mozzarella cheese', 'goat cheese', 'blue cheese', 'eggs', 'milk', 'butter', 'flour', 'yeast', 'baking powder', 'baking soda', 'cocoa powder', 'chocolate chips', 'vanilla extract', 'cinnamon', 'nutmeg', 'cloves', 'cardamom', 'rosemary', 'thyme', 'basil', 'oregano', 'paprika', 'cumin', 'coriander', 'turmeric'];
+ 
+  const queries = [
+    // proteins
+    'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'shrimp', 'turkey', 'lamb', 'duck',
+    'tofu', 'tempeh', 'seitan', 'eggs', 'lentils', 'beans', 'chickpeas',
+    // carbs & grains
+    'quinoa', 'rice', 'brown rice', 'couscous', 'bulgur', 'buckwheat', 'barley', 'oats', 'pasta', 'noodles',
+    // veggies & fruit
+    'potatoes', 'sweet potatoes', 'carrots', 'broccoli', 'cauliflower', 'spinach', 'kale', 'zucchini', 'eggplant', 'mushrooms',
+    'tomatoes', 'cucumber', 'bell peppers', 'onions', 'garlic', 'ginger', 'avocado', 'apples', 'bananas', 'berries', 'mango', 'pineapple',
+    // herbs & spices
+    'basil', 'oregano', 'rosemary', 'thyme', 'cilantro', 'parsley', 'mint', 'paprika', 'cumin', 'coriander', 'turmeric', 'curry', 'chili',
+    // world cuisines
+    'italian', 'mexican', 'indian', 'thai', 'japanese', 'korean', 'chinese', 'vietnamese', 'greek', 'turkish', 'french', 'spanish', 'moroccan', 'lebanese', 'brazilian', 'caribbean', 'lithuanian', 'polish', 'german', 'scandinavian',
+    // dishes
+    'soup', 'stew', 'curry', 'stir fry', 'tacos', 'burrito', 'quesadilla', 'pizza', 'pasta bake', 'risotto', 'paella', 'casserole',
+    'salad', 'bowl', 'wrap', 'sandwich', 'burger', 'meatballs', 'kebab', 'sushi', 'ramen', 'pho', 'dumplings', 'gnocchi',
+    // breakfast & snacks
+    'pancakes', 'waffles', 'omelette', 'oatmeal', 'smoothie', 'granola', 'avocado toast', 'shakshuka',
+    // cooking methods
+    'grilled', 'roasted', 'baked', 'air fryer', 'slow cooker', 'instant pot', 'sheet pan', 'one pot',
+    // diets & vibes
+    'vegan', 'vegetarian', 'keto', 'paleo', 'gluten free', 'high protein', 'low carb', 'dairy free',
+    // seasonal & occasions
+    'summer salad', 'fall soup', 'winter stew', 'spring vegetables', 'holiday dinner', 'bbq', 'picnic', 'game day',
+    // sauces & extras
+    'pesto', 'tahini', 'peanut sauce', 'teriyaki', 'harissa', 'chimichurri', 'tzatziki', 'salsa verde'
+  ];
   const randomNumber = Math.floor(Math.random() * queries.length);
   return queries[randomNumber];
 }
-
-
